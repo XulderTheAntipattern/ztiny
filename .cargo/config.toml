@@ -1,0 +1,6 @@
+[alias]
+b = "build"
+r = "run"
+t = "test"
+c = "clippy --all-targets --all-features"
+f = "fmt"
