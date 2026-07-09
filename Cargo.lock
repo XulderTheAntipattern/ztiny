@@ -3,6 +3,15 @@
 version = 4
 
 [[package]]
+name = "zt8"
+version = "0.1.0"
+dependencies = [
+ "ztiny_bus",
+ "ztiny_cpu",
+ "ztiny_machine",
+]
+
+[[package]]
 name = "ztiny_audio"
 version = "0.1.0"
 

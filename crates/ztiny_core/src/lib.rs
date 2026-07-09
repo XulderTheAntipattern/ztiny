@@ -1,6 +1,13 @@
+//! Shared core utilities used across the `ztiny` workspace.
+//!
+//! This crate is the foundational dependency for other crates like
+//! `ztiny_bus`, `ztiny_cpu`, and `ztiny_machine`.
+//!
+//! SECTION: Public reexports
 #![allow(unused_imports)]
-// NOTE: Anything that is found in more than 2-3 modules should be moved here.
-// Attempt at avoiding spaghetti.
+
+// NOTE: This crate currently exposes a broad set of helpers. As the
+// project matures, only commonly shared utilities should remain here.
 pub mod clock;
 pub mod endian;
 pub mod error;

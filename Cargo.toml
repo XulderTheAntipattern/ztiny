@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/zt8",
     "crates/ztiny_audio",
     "crates/ztiny_bus",
     "crates/ztiny_cli",

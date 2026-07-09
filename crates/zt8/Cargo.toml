@@ -1,0 +1,9 @@
+[package]
+name = "zt8"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ztiny_machine = { path = "../ztiny_machine" }
+ztiny_cpu = { path = "../ztiny_cpu" }
+ztiny_bus = { path = "../ztiny_bus" }

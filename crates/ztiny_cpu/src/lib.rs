@@ -1,8 +1,18 @@
 use ztiny_bus::Bus;
 use ztiny_core::numeric::{AddressType, WordType};
 
-pub trait Cpu<A: AddressType, W: WordType> {
+// SECTION: CPU trait
+// The CPU interface is intentionally small for early-stage machine design.
+pub trait Cpu {
+    type Address: AddressType;
+    type Word: WordType;
+
+    /// Reset CPU state to the initial condition.
     fn reset(&mut self);
-    fn step(&mut self, bus: &mut Bus<A, W>);
+
+    /// Execute one instruction or machine cycle.
+    fn step(&mut self, bus: &mut Bus<Self::Address, Self::Word>);
+
+    /// Return whether the CPU has halted.
     fn halted(&mut self) -> bool;
 }
