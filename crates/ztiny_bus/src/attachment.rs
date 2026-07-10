@@ -3,8 +3,7 @@ use ztiny_core::numeric::AddressType;
 use crate::{DeviceId, Region};
 
 // SECTION: Attachment bookkeeping
-// A device attachment ties a device to a region of the bus address space.
-// NOTE: Future work can validate overlapping regions on attach.
+// NOTE: Overlapping regions should be validated when attachments are added.
 #[allow(dead_code)]
 pub struct Attachment<A>
 where

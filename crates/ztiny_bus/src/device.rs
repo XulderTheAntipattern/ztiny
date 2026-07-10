@@ -1,7 +1,6 @@
 use ztiny_core::numeric::{AddressType, WordType};
 
 // SECTION: Device trait
-// A minimal device interface for bus-attached components.
 pub trait Device {
     type Address: AddressType;
     type Word: WordType;
@@ -10,7 +9,7 @@ pub trait Device {
     fn len(&self) -> Self::Address;
 
     /// Convenience helper to detect an empty device region.
-    // NOTE: This exists to silence warnings; it may be removed later.
+    /// NOTE: This helper is kept for now to avoid warnings.
     fn is_empty(&self) -> bool;
 
     /// Read a word at a device-local offset.

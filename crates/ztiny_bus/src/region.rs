@@ -1,7 +1,6 @@
 use ztiny_core::numeric::AddressType;
 
 // SECTION: Address region helper
-// Region describes a contiguous range within the global address space.
 pub struct Region<A>
 where
     A: AddressType,

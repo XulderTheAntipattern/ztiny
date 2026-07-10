@@ -3,9 +3,8 @@ use ztiny_core::numeric::AddressType;
 use crate::{Attachment, DeviceId};
 
 // SECTION: Address map trait
-// The address map trait defines the interface for managing device attachments and performing address lookup.
 pub trait AddressMap<A: AddressType> {
-    // TODO: Add error handling and return Result<(), AddressMapError> or something
+    // TODO: Add error handling once the API needs richer failures.
     /// Register a new attachment in the address map.
     fn insert(&mut self, attachment: Attachment<A>);
 
@@ -25,7 +24,6 @@ pub trait AddressMap<A: AddressType> {
 // !SECTION
 
 // SECTION: Vector-based address map implementation
-// A simple implementation that stores attachments in a vector.
 #[derive(Default)]
 pub struct VecAddressMap<A: AddressType> {
     attachments: Vec<Attachment<A>>,

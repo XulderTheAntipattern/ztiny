@@ -2,11 +2,11 @@ use ztiny_bus::Bus;
 use ztiny_cpu::Cpu;
 
 pub struct Zt8 {
-    // Math registers
+    // SECTION: CPU state
+    pc: u16,
     a: u8,
     b: u8,
     c: u8,
-    // Test/conditional/branching result
     t: u8,
 }
 
@@ -15,6 +15,7 @@ impl Cpu for Zt8 {
     type Word = u8;
 
     fn reset(&mut self) {
+        self.pc = 0;
         self.a = 0;
         self.b = 0;
         self.c = 0;
@@ -22,8 +23,11 @@ impl Cpu for Zt8 {
     }
 
     fn step(&mut self, bus: &mut Bus<Self::Address, Self::Word>) {
-        // minimal placeholder: no-op step
+        // NOTE: Placeholder step; the CPU does nothing yet.
         let _ = bus;
+
+        // TODO: Decode instruction
+        // TODO: Execute instruction
     }
 
     fn halted(&mut self) -> bool {

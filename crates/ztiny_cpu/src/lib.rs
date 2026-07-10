@@ -2,7 +2,6 @@ use ztiny_bus::Bus;
 use ztiny_core::numeric::{AddressType, WordType};
 
 // SECTION: CPU trait
-// The CPU interface is intentionally small for early-stage machine design.
 pub trait Cpu {
     type Address: AddressType;
     type Word: WordType;
@@ -16,3 +15,4 @@ pub trait Cpu {
     /// Return whether the CPU has halted.
     fn halted(&mut self) -> bool;
 }
+// !SECTION

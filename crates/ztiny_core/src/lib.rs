@@ -6,8 +6,7 @@
 //! SECTION: Public reexports
 #![allow(unused_imports)]
 
-// NOTE: This crate currently exposes a broad set of helpers. As the
-// project matures, only commonly shared utilities should remain here.
+// NOTE: The public surface may narrow as the framework matures.
 pub mod clock;
 pub mod endian;
 pub mod error;

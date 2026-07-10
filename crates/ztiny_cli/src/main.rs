@@ -1,5 +1,5 @@
 // SECTION: CLI entrypoint
-// This is currently a placeholder for future command-line operations.
+// NOTE: Placeholder until a real CLI is implemented.
 fn main() {
     println!("Hello, world!");
 }

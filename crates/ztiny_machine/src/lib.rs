@@ -3,7 +3,6 @@ pub use ztiny_core::numeric::{AddressType, WordType};
 use ztiny_cpu::Cpu;
 
 // SECTION: Machine wrapper
-// A machine binds a CPU and a bus together into a runnable system.
 pub struct Machine<S: MachineSpec> {
     cpu: S::Cpu,
     pub bus: Bus<S::Address, S::Word>,

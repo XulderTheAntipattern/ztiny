@@ -1,5 +1,5 @@
 // SECTION: Video placeholder
-// This crate is a stub and currently contains a trivial helper function.
+// NOTE: This crate is intentionally minimal until video support is implemented.
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }
