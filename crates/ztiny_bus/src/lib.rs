@@ -11,7 +11,7 @@ pub mod map;
 pub mod region;
 
 pub use attachment::Attachment;
-pub use bus::Bus;
+pub use bus::{Bus, BusAccess};
 pub use device::Device;
 pub use id::*;
 pub use map::{AddressMap, VecAddressMap};

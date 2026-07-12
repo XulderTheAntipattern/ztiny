@@ -47,9 +47,7 @@ impl<A: AddressType> AddressMap<A> for VecAddressMap<A> {
     }
 
     fn lookup(&self, address: A) -> Option<&Attachment<A>> {
-        self.attachments
-            .iter()
-            .find(|attachment| attachment.region.contains(address))
+        self.attachments.iter().find(|attachment| attachment.region.contains(address))
     }
 }
 // !SECTION

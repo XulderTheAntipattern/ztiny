@@ -1,14 +1,18 @@
-use ztiny_bus::Bus;
+use ztiny_bus::BusAccess;
 pub use ztiny_core::numeric::{AddressType, WordType};
 use ztiny_cpu::Cpu;
 
 // SECTION: Machine wrapper
 pub struct Machine<S: MachineSpec> {
     cpu: S::Cpu,
-    pub bus: Bus<S::Address, S::Word>,
+    pub bus: S::Bus,
 }
 
 impl<S: MachineSpec> Machine<S> {
+    pub fn new(cpu: S::Cpu, bus: S::Bus) -> Self {
+        Self { cpu, bus }
+    }
+
     /// Execute one machine step by driving the CPU with the bus.
     pub fn step(&mut self) {
         self.cpu.step(&mut self.bus);
@@ -24,6 +28,7 @@ impl<S: MachineSpec> Machine<S> {
 pub trait MachineSpec {
     type Address: AddressType;
     type Word: WordType;
+    type Bus: BusAccess<Address = Self::Address, Word = Self::Word>;
     type Cpu: Cpu<Address = Self::Address, Word = Self::Word>;
     // type Video: VideoDevice;
     // type Audio: AudioDevice;
