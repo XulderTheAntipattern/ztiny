@@ -1,5 +1,8 @@
-use ztiny_bus::BusAccess;
+use ztiny_bus::{
+    AddressMap, Attachment, Bus, BusAccess, Region, device::MemoryDevices,
+};
 use ztiny_cpu::Cpu;
+use ztiny_machine::{Machine, MachineSpec};
 
 const NOP: u8 = 0x00;
 const LDA_IMM: u8 = 0x01;
@@ -9,6 +12,33 @@ const MOV_AB: u8 = 0x04;
 const ADD_AB: u8 = 0x05;
 const HLT: u8 = 0xff;
 
+#[derive(Default)]
+struct Zt8Map {
+    attachments: Vec<Attachment<u16>>,
+}
+
+impl AddressMap<u16> for Zt8Map {
+    fn insert(&mut self, attachment: Attachment<u16>) {
+        self.attachments.push(attachment);
+    }
+
+    fn lookup(&self, address: u16) -> Option<&Attachment<u16>> {
+        self.attachments
+            .iter()
+            .find(|attachment| attachment.region.contains(address))
+    }
+}
+
+struct Zt8MachineSpec;
+
+impl MachineSpec for Zt8MachineSpec {
+    type Address = u16;
+    type Word = u8;
+    type Bus = Bus<Self::Address, Self::Word, Zt8Map>;
+    type Cpu = Zt8;
+}
+
+#[derive(Default)]
 pub struct Zt8 {
     // SECTION: CPU state
     pc: u16,
@@ -17,12 +47,6 @@ pub struct Zt8 {
     c: u8,
     t: u8,
     halted: bool,
-}
-
-impl Default for Zt8 {
-    fn default() -> Self {
-        Self { pc: 0, a: 0, b: 0, c: 0, t: 0, halted: false }
-    }
 }
 
 impl Cpu for Zt8 {
@@ -213,8 +237,47 @@ mod tests {
 
         assert!(cpu.halted());
     }
+
+    #[test]
+    fn machine_runs_program_through_bus_and_memory() {
+        let mut bus = Bus::<u16, u8, Zt8Map>::new();
+        let mut memory = MemoryDevices::<u16, u8>::default();
+        memory.read_only = false;
+        let region = Region::new(0x0000, 0x00ff);
+        let _ = bus.attach(Box::new(memory), region);
+
+        let mut machine = Machine::<Zt8MachineSpec>::new(Zt8::default(), bus);
+        machine.bus.write(0x0000, LDA_IMM).unwrap();
+        machine.bus.write(0x0001, 0x2a).unwrap();
+        machine.bus.write(0x0002, HLT).unwrap();
+
+        for _ in 0..3 {
+            if machine.halted() {
+                break;
+            }
+            machine.step();
+        }
+
+        assert!(machine.halted());
+        assert_eq!(machine.cpu().a, 0x2a);
+    }
 }
 
 fn main() {
-    println!("Sup")
+    let mut bus = Bus::<u16, u8, Zt8Map>::new();
+    let mut memory = MemoryDevices::<u16, u8>::default();
+    memory.read_only = false;
+    let region = Region::new(0x0000, 0x00ff);
+    let _ = bus.attach(Box::new(memory), region);
+
+    let mut machine = Machine::<Zt8MachineSpec>::new(Zt8::default(), bus);
+    machine.bus.write(0x0000, LDA_IMM).unwrap();
+    machine.bus.write(0x0001, 0x2a).unwrap();
+    machine.bus.write(0x0002, HLT).unwrap();
+
+    while !machine.halted() {
+        machine.step();
+    }
+
+    println!("ZT8 halted")
 }

@@ -15,11 +15,7 @@ pub trait Cpu {
         B: BusAccess<Address = Self::Address, Word = Self::Word>;
 
     /// Decode a fetched word using the supplied bus abstraction.
-    fn decode<B>(
-        &self,
-        instruction: Self::Word,
-        bus: &mut B,
-    ) -> Option<Self::Word>
+    fn decode<B>(&self, instruction: Self::Word, bus: &mut B) -> Option<Self::Word>
     where
         B: BusAccess<Address = Self::Address, Word = Self::Word>;
 

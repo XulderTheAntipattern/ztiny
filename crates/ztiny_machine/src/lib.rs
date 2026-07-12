@@ -13,6 +13,14 @@ impl<S: MachineSpec> Machine<S> {
         Self { cpu, bus }
     }
 
+    pub fn cpu(&self) -> &S::Cpu {
+        &self.cpu
+    }
+
+    pub fn cpu_mut(&mut self) -> &mut S::Cpu {
+        &mut self.cpu
+    }
+
     /// Execute one machine step by driving the CPU with the bus.
     pub fn step(&mut self) {
         self.cpu.step(&mut self.bus);
@@ -22,6 +30,10 @@ impl<S: MachineSpec> Machine<S> {
     // NOTE: Bus-level reset is not implemented yet.
     pub fn reset(&mut self) {
         self.cpu.reset();
+    }
+
+    pub fn halted(&mut self) -> bool {
+        self.cpu.halted()
     }
 }
 

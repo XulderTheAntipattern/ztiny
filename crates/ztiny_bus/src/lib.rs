@@ -14,5 +14,5 @@ pub use attachment::Attachment;
 pub use bus::{Bus, BusAccess};
 pub use device::Device;
 pub use id::*;
-pub use map::{AddressMap, VecAddressMap};
+pub use map::AddressMap;
 pub use region::Region;

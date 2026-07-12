@@ -19,7 +19,7 @@ pub trait BusAccess {
 // REVIEW: What owns a bus? The motherboard does. The cpu doesn't, the devices don't.
 // This may need to be turned into a
 #[derive(Default)]
-pub struct Bus<A: AddressType, W: WordType, M = dyn AddressMap<A>>
+pub struct Bus<A: AddressType, W: WordType, M>
 where
     M: AddressMap<A>,
 {

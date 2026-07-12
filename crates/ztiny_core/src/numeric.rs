@@ -8,9 +8,7 @@
 /// bus, devices, and CPU interfaces.
 ///
 // REVIEW: Extend the implementation list if wider address spaces are needed.
-pub trait AddressType:
-    Copy + Clone + Eq + Ord + std::fmt::Debug + Default
-{
+pub trait AddressType: Copy + Clone + Eq + Ord + std::fmt::Debug + Default {
     const BITS: u8;
 
     fn into_usize(self) -> usize;
@@ -58,9 +56,7 @@ impl AddressType for u32 {
 ///
 /// This trait is the element type used for memory reads and writes.
 /// It is intentionally similar to `AddressType`.
-pub trait WordType:
-    Copy + Clone + Eq + Ord + std::fmt::Debug + Default
-{
+pub trait WordType: Copy + Clone + Eq + Ord + std::fmt::Debug + Default {
     const BITS: u8;
 }
 

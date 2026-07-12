@@ -44,11 +44,7 @@ where
         let mut data = Vec::with_capacity(capacity);
         data.resize_with(capacity, W::default);
 
-        Self {
-            data: data.into_boxed_slice(),
-            read_only: true,
-            _address: PhantomData,
-        }
+        Self { data: data.into_boxed_slice(), read_only: true, _address: PhantomData }
     }
 }
 
