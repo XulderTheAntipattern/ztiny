@@ -21,12 +21,11 @@ impl<S: MachineSpec> Machine<S> {
         &mut self.cpu
     }
 
-    /// Execute one machine step by driving the CPU with the bus.
     pub fn step(&mut self) {
+        // TODO: Remove this in favor of running each step within the cpu itself.
         self.cpu.step(&mut self.bus);
     }
 
-    /// Reset the machine by resetting only the CPU for now.
     // NOTE: Bus-level reset is not implemented yet.
     pub fn reset(&mut self) {
         self.cpu.reset();
@@ -41,9 +40,5 @@ pub trait MachineSpec {
     type Address: AddressType;
     type Word: WordType;
     type Bus: BusAccess<Address = Self::Address, Word = Self::Word>;
-    type Cpu: Cpu<Address = Self::Address, Word = Self::Word>;
-    // type Video: VideoDevice;
-    // type Audio: AudioDevice;
-    // type MainRam: Memory;
-    // type Rom: Memory;
+    type Cpu: Cpu<Address = Self::Address, Word = Self::Word, Bus = Self::Bus>;
 }

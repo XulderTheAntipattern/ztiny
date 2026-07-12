@@ -26,6 +26,7 @@ pub trait Device {
 }
 
 // TODO: Definitely break this up from this module.
+#[derive(Default)]
 pub struct MemoryDevices<A: AddressType, W: WordType> {
     pub data: Box<[W]>,
     pub read_only: bool,
@@ -35,33 +36,23 @@ pub struct MemoryDevices<A: AddressType, W: WordType> {
 impl<A, W> MemoryDevices<A, W>
 where
     A: AddressType,
-    W: WordType + Default,
+    W: WordType,
 {
-    pub fn new() -> Self {
+    pub fn new(read_only: bool) -> Self {
         // REVIEW: defaulting to usize::MAX is fine and all, but size should be considered
         // NOTE: ^ because I want this capable of spinning many devices.
         let capacity = 1usize.checked_shl(A::BITS as u32).unwrap_or(usize::MAX);
         let mut data = Vec::with_capacity(capacity);
         data.resize_with(capacity, W::default);
 
-        Self { data: data.into_boxed_slice(), read_only: true, _address: PhantomData }
-    }
-}
-
-impl<A, W> Default for MemoryDevices<A, W>
-where
-    A: AddressType,
-    W: WordType + Default,
-{
-    fn default() -> Self {
-        Self::new()
+        Self { data: data.into_boxed_slice(), read_only, _address: PhantomData }
     }
 }
 
 impl<A, W> Device for MemoryDevices<A, W>
 where
     A: AddressType,
-    W: WordType + Default,
+    W: WordType,
 {
     type Address = A;
     type Word = W;

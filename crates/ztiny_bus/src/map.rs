@@ -2,7 +2,6 @@ use ztiny_core::numeric::AddressType;
 
 use crate::{Attachment, DeviceId};
 
-// SECTION: Address map trait
 pub trait AddressMap<A: AddressType> {
     // TODO: Add error handling once the API needs richer failures.
     /// Register a new attachment in the address map.
@@ -21,4 +20,5 @@ pub trait AddressMap<A: AddressType> {
         self.lookup(address).map(|a| a.device)
     }
 }
-// !SECTION
+
+// TODO: Implement som basic
