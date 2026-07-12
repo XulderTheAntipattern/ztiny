@@ -132,27 +132,20 @@ impl Cpu for Zt8 {
     }
 }
 
+type Zt8Bus = <Zt8 as ztiny_cpu::Cpu>::Bus;
+
 impl Zt8 {
-    fn read_operand<B>(&self, bus: &mut B, address: u16) -> Option<u8>
-    where
-        B: BusAccess<Address = u16, Word = u8>,
-    {
+    fn read_operand(&self, bus: &mut Zt8Bus, address: u16) -> Option<u8> {
         bus.read(address)
     }
 
-    fn read_address<B>(&self, bus: &mut B, address: u16) -> Option<u16>
-    where
-        B: BusAccess<Address = u16, Word = u8>,
-    {
+    fn read_address(&self, bus: &mut Zt8Bus, address: u16) -> Option<u16> {
         let low = bus.read(address)?;
         let high = bus.read(address.wrapping_add(1))?;
         Some(u16::from_le_bytes([low, high]))
     }
 
-    fn _peek<B>(&self, bus: &mut B) -> Option<u8>
-    where
-        B: BusAccess<Address = u16, Word = u8>,
-    {
+    fn _peek(&self, bus: &mut Zt8Bus) -> Option<u8> {
         bus.read(self.pc)
     }
 }
@@ -169,9 +162,9 @@ fn main() {
     machine.bus.write(0x0001, 0x2a).unwrap();
     machine.bus.write(0x0002, HLT).unwrap();
 
-    while !machine.halted() {
-        machine.step();
-    }
+    println!("{}", machine.bus.read(0x0000).unwrap());
+    println!("{}", machine.bus.read(0x0001).unwrap());
+    println!("{}", machine.bus.read(0x0002).unwrap());
 
     println!("ZT8 halted")
 }

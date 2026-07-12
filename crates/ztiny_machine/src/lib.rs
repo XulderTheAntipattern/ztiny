@@ -2,7 +2,7 @@ use ztiny_bus::BusAccess;
 pub use ztiny_core::numeric::{AddressType, WordType};
 use ztiny_cpu::Cpu;
 
-// SECTION: Machine wrapper
+// REVIEW: I don't think I like this. May change to trait? Might make it more complicated.
 pub struct Machine<S: MachineSpec> {
     cpu: S::Cpu,
     pub bus: S::Bus,
