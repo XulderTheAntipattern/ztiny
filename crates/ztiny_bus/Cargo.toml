@@ -1,7 +1,0 @@
-[package]
-name = "ztiny_bus"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-ztiny_core = { path = "../ztiny_core" }

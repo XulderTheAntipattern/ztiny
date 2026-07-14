@@ -1,199 +1,53 @@
-use ztiny_bus::{
-    AddressMap, Attachment, Bus, BusAccess, Region, device::MemoryDevices,
+use zt8::{
+    Machine, Opcode, Register, StopReason, VideoBackend,
+    bus::PAGE_SIZE,
+    devices::{VIDEO_CTRL_ENABLE, rgb332_to_rgb888},
+    isa::{VECTOR_RESET, ldi, st_abs},
 };
-use ztiny_cpu::Cpu;
-use ztiny_machine::{Machine, MachineSpec};
-
-const NOP: u8 = 0x00;
-const LDA_IMM: u8 = 0x01;
-const LDB_IMM: u8 = 0x02;
-const STA_ABS: u8 = 0x03;
-const MOV_AB: u8 = 0x04;
-const ADD_AB: u8 = 0x05;
-const HLT: u8 = 0xff;
 
 #[derive(Default)]
-pub struct Zt8Map {
-    attachments: Vec<Attachment<u16>>,
-}
+struct ConsoleBackend;
 
-impl AddressMap<u16> for Zt8Map {
-    fn insert(&mut self, attachment: Attachment<u16>) {
-        self.attachments.push(attachment);
-    }
-
-    fn lookup(&self, address: u16) -> Option<&Attachment<u16>> {
-        self.attachments
-            .iter()
-            .find(|attachment| attachment.region.contains(address))
+impl VideoBackend for ConsoleBackend {
+    fn present(&mut self, width: usize, height: usize, pixels: &[u8]) {
+        let [red, green, blue] = rgb332_to_rgb888(pixels[0]);
+        println!("frame {width}x{height}, first pixel rgb({red}, {green}, {blue})");
     }
 }
 
-struct Zt8MachineSpec;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let start = 0x0100u16;
+    let program = [
+        ldi(Register::A),
+        VIDEO_CTRL_ENABLE,
+        st_abs(Register::A),
+        0x30,
+        0xc0,
+        ldi(Register::A),
+        0xe3,
+        st_abs(Register::A),
+        0x00,
+        0xd0,
+        st_abs(Register::A),
+        0x31,
+        0xc0,
+        Opcode::Halt.byte(),
+    ];
 
-impl MachineSpec for Zt8MachineSpec {
-    type Address = u16;
-    type Word = u8;
-    type Bus = Bus<Self::Address, Self::Word, Zt8Map>;
-    type Cpu = Zt8;
-}
+    let mut rom = vec![0xff; PAGE_SIZE];
+    rom[usize::from(start)..usize::from(start) + program.len()].copy_from_slice(&program);
+    rom[usize::from(VECTOR_RESET)..usize::from(VECTOR_RESET) + 2]
+        .copy_from_slice(&start.to_le_bytes());
 
-#[derive(Default)]
-pub struct Zt8 {
-    // SECTION: CPU state
-    pc: u16,
-    a: u8,
-    b: u8,
-    c: u8,
-    t: u8,
-    halted: bool,
-}
-
-impl Cpu for Zt8 {
-    type Address = u16;
-    type Word = u8;
-    type Bus = Bus<Self::Address, Self::Word, Zt8Map>;
-
-    fn reset(&mut self) {
-        self.pc = 0;
-        self.a = 0;
-        self.b = 0;
-        self.c = 0;
-        self.t = 0;
-        self.halted = false;
+    let mut machine = Machine::default();
+    machine.load_rom(&rom)?;
+    machine.reset();
+    let result = machine.run(1_000)?;
+    if result.reason != StopReason::Halted {
+        return Err("demo program exceeded its step limit".into());
     }
 
-    fn fetch(&mut self, bus: &mut Self::Bus) -> Option<Self::Word> {
-        bus.read(self.pc)
-    }
-
-    fn decode(
-        &self,
-        instruction: Self::Word,
-        bus: &mut Self::Bus,
-    ) -> Option<Self::Word> {
-        let _ = bus;
-        match instruction {
-            NOP | LDA_IMM | LDB_IMM | STA_ABS | MOV_AB | ADD_AB | HLT => {
-                Some(instruction)
-            }
-            _ => None,
-        }
-    }
-
-    fn execute(&mut self, bus: &mut Self::Bus, instruction: Self::Word) {
-        match instruction {
-            NOP => self.pc = self.pc.wrapping_add(1),
-            LDA_IMM => {
-                if let Some(value) =
-                    self.read_operand(bus, self.pc.wrapping_add(1))
-                {
-                    self.a = value;
-                    self.pc = self.pc.wrapping_add(2);
-                } else {
-                    self.pc = self.pc.wrapping_add(1);
-                }
-            }
-            LDB_IMM => {
-                if let Some(value) =
-                    self.read_operand(bus, self.pc.wrapping_add(1))
-                {
-                    self.b = value;
-                    self.pc = self.pc.wrapping_add(2);
-                } else {
-                    self.pc = self.pc.wrapping_add(1);
-                }
-            }
-            STA_ABS => {
-                let address = self.read_address(bus, self.pc.wrapping_add(1));
-                if let Some(address) = address {
-                    let _ = bus.write(address, self.a);
-                }
-                self.pc = self.pc.wrapping_add(3);
-            }
-            MOV_AB => {
-                self.a = self.b;
-                self.pc = self.pc.wrapping_add(1);
-            }
-            ADD_AB => {
-                self.a = self.a.wrapping_add(self.b);
-                self.pc = self.pc.wrapping_add(1);
-            }
-            HLT => {
-                self.halted = true;
-                self.pc = self.pc.wrapping_add(1);
-            }
-            _ => self.pc = self.pc.wrapping_add(1),
-        }
-    }
-
-    fn halted(&self) -> bool {
-        self.halted
-    }
-}
-
-type Zt8Bus = <Zt8 as ztiny_cpu::Cpu>::Bus;
-
-impl Zt8 {
-    fn read_operand(&self, bus: &mut Zt8Bus, address: u16) -> Option<u8> {
-        bus.read(address)
-    }
-
-    fn read_address(&self, bus: &mut Zt8Bus, address: u16) -> Option<u16> {
-        let low = bus.read(address)?;
-        let high = bus.read(address.wrapping_add(1))?;
-        Some(u16::from_le_bytes([low, high]))
-    }
-
-    fn _peek(&self, bus: &mut Zt8Bus) -> Option<u8> {
-        bus.read(self.pc)
-    }
-}
-
-fn main() {
-    let mut bus = Bus::<u16, u8, Zt8Map>::new();
-    let mut memory = MemoryDevices::<u16, u8>::default();
-    memory.read_only = false;
-    let region = Region::new(0x0000, 0x00ff);
-    let _ = bus.attach(Box::new(memory), region);
-
-    let mut machine = Machine::<Zt8MachineSpec>::new(Zt8::default(), bus);
-    machine.bus.write(0x0000, LDA_IMM).unwrap();
-    machine.bus.write(0x0001, 0x2a).unwrap();
-    machine.bus.write(0x0002, HLT).unwrap();
-
-    println!("{}", machine.bus.read(0x0000).unwrap());
-    println!("{}", machine.bus.read(0x0001).unwrap());
-    println!("{}", machine.bus.read(0x0002).unwrap());
-
-    println!("ZT8 halted")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn machine_runs_program_through_bus_and_memory() {
-        let mut bus = Bus::<u16, u8, Zt8Map>::new();
-        let mut memory = MemoryDevices::<u16, u8>::default();
-        memory.read_only = false;
-        let region = Region::new(0x0000, 0x00ff);
-        let _ = bus.attach(Box::new(memory), region);
-
-        let mut machine = Machine::<Zt8MachineSpec>::new(Zt8::default(), bus);
-        machine.bus.write(0x0000, LDA_IMM).unwrap();
-        machine.bus.write(0x0001, 0x2a).unwrap();
-        machine.bus.write(0x0002, HLT).unwrap();
-
-        for _ in 0..3 {
-            if machine.halted() {
-                break;
-            }
-            machine.step();
-        }
-
-        assert!(machine.halted());
-        assert_eq!(machine.cpu().a, 0x2a);
-    }
+    machine.render_if_pending(&mut ConsoleBackend);
+    println!("ZT8 halted after {} steps / {} cycles", result.steps, result.cycles);
+    Ok(())
 }
